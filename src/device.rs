@@ -352,7 +352,7 @@ impl UdevDevice {
                 let mut ifr: libc::ifreq = unsafe { mem::zeroed() };
                 ifr.ifr_ifru.ifru_ifindex = ifindex;
                 // SAFETY: all arguments are valid, pointers reference valid memory, and `SICGIFNAME` is a valid ioctl
-                if unsafe { libc::ioctl(sock, libc::SIOCGIFNAME, &mut ifr) } != 0 {
+                if unsafe { libc::ioctl(sock, libc::SIOCGIFNAME.try_into().unwrap(), &mut ifr) } != 0 {
                     let errno = io::Error::last_os_error();
                     // SAFETY: `sock` is a valid socket file descriptor returned by the kernel
                     unsafe { libc::close(sock) };
