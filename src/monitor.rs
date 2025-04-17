@@ -777,7 +777,10 @@ impl UdevMonitor {
             smsg.msg_iov = &mut iov as *mut libc::iovec as *mut _;
             smsg.msg_iovlen = 1;
             smsg.msg_control = cred_msg.as_mut_ptr() as *mut _;
+            #[cfg(not(target_env = "musl"))]
             smsg.msg_controllen = cred_msg.len();
+            #[cfg(target_env = "musl")]
+            smsg.msg_controllen = cred_msg.len() as u32;
             smsg.msg_name = &mut snl as *mut libc::sockaddr_nl as *mut _;
             smsg.msg_namelen = mem::size_of::<libc::sockaddr_nl>() as u32;
 
@@ -931,7 +934,7 @@ impl UdevMonitor {
             // See https://github.com/rust-lang/libc/issues/2344 for more info
             let mut smsg: libc::msghdr = unsafe { zeroed() };
             smsg.msg_iov = iov.as_mut_ptr() as *mut _;
-            smsg.msg_iovlen = iov.len().into();
+            smsg.msg_iovlen = iov.len() as i32;
             smsg.msg_control = core::ptr::null_mut();
             smsg.msg_controllen = 0;
             smsg.msg_flags = 0;
@@ -943,7 +946,7 @@ impl UdevMonitor {
         #[cfg(not(target_env = "musl"))]
         let mut smsg = libc::msghdr {
             msg_iov: iov.as_mut_ptr() as *mut _,
-            msg_iovlen: iov.len().into(),
+            msg_iovlen: iov.len(),
             msg_control: core::ptr::null_mut(),
             msg_controllen: 0,
             msg_flags: 0,
