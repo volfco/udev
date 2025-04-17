@@ -1,6 +1,6 @@
 //! Connects to a device event source.
 
-use std::{cmp, fmt, fs, io, mem, sync::Arc};
+use std::{cmp, fmt, fs, io, mem, sync::Arc, mem::zeroed};
 
 use crate::{
     util, Error, Result, Udev, UdevDevice, UdevEntry, UdevEntryList, UdevList, UdevSocket,
@@ -777,7 +777,7 @@ impl UdevMonitor {
             smsg.msg_iov = &mut iov as *mut libc::iovec as *mut _;
             smsg.msg_iovlen = 1;
             smsg.msg_control = cred_msg.as_mut_ptr() as *mut _;
-            smsg.msg_controllen = cred_msg.len().into();
+            smsg.msg_controllen = cred_msg.len();
             smsg.msg_name = &mut snl as *mut libc::sockaddr_nl as *mut _;
             smsg.msg_namelen = mem::size_of::<libc::sockaddr_nl>() as u32;
 
@@ -938,7 +938,7 @@ impl UdevMonitor {
             smsg.msg_name = core::ptr::null_mut();
             smsg.msg_namelen = 0;
             smsg
-        }
+        };
 
         #[cfg(not(target_env = "musl"))]
         let mut smsg = libc::msghdr {
