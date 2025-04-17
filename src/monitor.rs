@@ -778,9 +778,13 @@ impl UdevMonitor {
             smsg.msg_iovlen = 1;
             smsg.msg_control = cred_msg.as_mut_ptr() as *mut _;
             #[cfg(not(target_env = "musl"))]
-            smsg.msg_controllen = cred_msg.len();
+            {
+                smsg.msg_controllen = cred_msg.len();
+            }
             #[cfg(target_env = "musl")]
-            smsg.msg_controllen = cred_msg.len() as u32;
+            {
+                smsg.msg_controllen = cred_msg.len() as u32;
+            }
             smsg.msg_name = &mut snl as *mut libc::sockaddr_nl as *mut _;
             smsg.msg_namelen = mem::size_of::<libc::sockaddr_nl>() as u32;
 
